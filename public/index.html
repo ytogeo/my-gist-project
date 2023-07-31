@@ -1,0 +1,406 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>武汉市交通健康情况可视化平台</title>
+    <link href="lib/layui-v2.6.8/layui/css/layui.css" rel="stylesheet" media="all" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      @import url(lib/Cesium_Build/CesiumUnminified/Widgets/widgets.css);
+
+      #cesiumContainer {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        vertical-align: middle;
+        text-align: center;
+        /*overflow: hidden;*/
+      }
+
+      /*注意井号和点！！*/
+      #cesiumContainer .cesium-viewer {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        z-index: 2;
+        /*设置visible hidden：存在（里面的东西在跑），但是看不见；设置display none：看不见，也不存在（里面的东西不在跑）*/
+        visibility: hidden;
+      }
+
+      #cesiumContainer .cesium-viewer-bottom {
+        display: none;
+      }
+
+      #loadingBox {
+        position: absolute;
+        z-index: 1;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: url("images/loading.gif");
+        background-color: rgba(190, 190, 190, 0.35);
+        background-position: center center;
+        background-repeat: no-repeat;
+      }
+
+      #bigWindowAmap {
+        position: absolute;
+        z-index: 999;
+        width: 100%;
+        height: 100%;
+        visibility: hidden;
+      }
+
+      #smallWindowCesium {
+        position: absolute;
+        z-index: 999;
+        width: 100%;
+        height: 100%;
+        visibility: hidden;
+      }
+
+      #switchButton {
+        position: absolute;
+        z-index: 999;
+        background: url("images/switch.png") center center;
+        background-size: 60% 60%;
+        background-repeat: no-repeat;
+        background-color: rgb(224, 224, 224);
+        right: 0;
+        bottom: 1px;
+        width: 30px;
+        height: 30px;
+        border-radius: 30%;
+        cursor: pointer;
+      }
+
+      .hintText {
+        position: absolute;
+        z-index: 999;
+        width: 100%;
+        height: 100%;
+        visibility: hidden;
+        top: 100px;
+        color: rgba(176, 175, 175, 0.8);
+        text-align: center;
+      }
+
+      .grid-container {
+        position: relative;
+        display: grid;
+        height: 100%;
+        grid-template-rows: 0.8fr 0.7fr 1fr 1fr 1fr 1fr;
+        grid-template-columns: 1fr 2fr;
+        top: 5px;
+        left: 30px;
+        right: 0px;
+      }
+
+      .table-value {
+        color: #95daff;
+        width: 70%;
+      }
+
+      .hint-value {
+        color: #676767;
+        font-size: 13px;
+        grid-gap: 2px;
+      }
+
+      .field-value {
+        color: #acd0e4;
+      }
+      .auto-item {
+        color: #676767;
+      }
+      .amap-sug-result {
+        z-index: 99999999;
+      }
+
+      #title {
+        font-family: "微软雅黑";
+        font-size: 30px;
+        letter-spacing: -2px;
+        text-align: center;
+        line-height: 90px;
+        padding-right: 55px;
+        color: #daf9ff;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="head clearfix">
+      <h1 class="pulll_left" id="title">武汉市交通健康情况可视化平台</h1>
+      <div class="menu menu2 pulll_left">
+        <ul>
+          <!-- <li><a href="javascript:void(0)">切换显示</a></li> -->
+          <li>
+            <a href="https://report.amap.com/share.do?id=a184b07685866c850185c2e9da200007" target="_blank">数据说明</a>
+          </li>
+          <li>
+            <a href="javascript:void(0)" onclick="displayRouteJamPoint()">拥堵道路</a>
+          </li>
+          <li>
+            <a href="javascript:void(0)" onclick="displayJamArea()">拥堵区域</a>
+          </li>
+          <li>
+            <a href="javascript:void(0)" onclick="displayRoutePlanningForm()">驾车规划</a>
+          </li>
+          <li>
+            <a href="javascript:void(0)" onclick="displayTrafficLayer()">实时路况</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="time" id="showTime">【加载时间中…】</div>
+    </div>
+    <div class="mainbox">
+      <ul class="clearfix nav1">
+        <li style="width: 22%">
+          <div class="box">
+            <div class="tit">行政区拥堵排名</div>
+            <div class="boxnav" style="height: 500px">
+              <table class="jamRankTable" id="jamRankTable" width="100%" cellspacing="0" cellpadding="0">
+                <tbody>
+                  <tr>
+                    <th>排名</th>
+                    <th>区域</th>
+                    <th>拥堵指数</th>
+                    <th>旅行速度</th>
+                  </tr>
+                  <tr>
+                    <td>1</td>
+                    <td><span class="text-w" id="1-1">加载中</span></td>
+                    <td><span class="text-b" id="1-2">加载中</span></td>
+                    <td>
+                      <div class="text-d" id="1-3">加载中</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>2</td>
+                    <td><span class="text-w" id="2-1">加载中</span></td>
+                    <td><span class="text-b" id="2-2">加载中</span></td>
+                    <td>
+                      <div class="text-d" id="2-3">加载中</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td><span class="text-w" id="3-1">加载中</span></td>
+                    <td><span class="text-b" id="3-2">加载中</span></td>
+                    <td>
+                      <div class="text-d" id="3-3">加载中</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>4</td>
+                    <td><span class="text-w" id="4-1">加载中</span></td>
+                    <td><span class="text-b" id="4-2">加载中</span></td>
+                    <td>
+                      <div class="text-d" id="4-3">加载中</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>5</td>
+                    <td><span class="text-w" id="5-1">加载中</span></td>
+                    <td><span class="text-b" id="5-2">加载中</span></td>
+                    <td>
+                      <div class="text-d" id="5-3">加载中</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>6</td>
+                    <td><span class="text-w" id="6-1">加载中</span></td>
+                    <td><span class="text-b" id="6-2">加载中</span></td>
+                    <td>
+                      <div class="text-d" id="6-3">加载中</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>7</td>
+                    <td><span class="text-w" id="7-1">加载中</span></td>
+                    <td><span class="text-b" id="7-2">加载中</span></td>
+                    <td>
+                      <div class="text-d" id="7-3">加载中</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>8</td>
+                    <td><span class="text-w" id="8-1">加载中</span></td>
+                    <td><span class="text-b" id="8-2">加载中</span></td>
+                    <td>
+                      <div class="text-d" id="8-3">加载中</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>9</td>
+                    <td><span class="text-w" id="9-1">加载中</span></td>
+                    <td><span class="text-b" id="9-2">加载中</span></td>
+                    <td>
+                      <div class="text-d" id="9-3">加载中</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>10</td>
+                    <td><span class="text-w" id="10-1">加载中</span></td>
+                    <td><span class="text-b" id="10-2">加载中</span></td>
+                    <td>
+                      <div class="text-d" id="10-3">加载中</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>11</td>
+                    <td><span class="text-w" id="11-1">加载中</span></td>
+                    <td><span class="text-b" id="11-2">加载中</span></td>
+                    <td>
+                      <div class="text-d" id="11-3">加载中</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>12</td>
+                    <td><span class="text-w" id="12-1">加载中</span></td>
+                    <td><span class="text-b" id="12-2">加载中</span></td>
+                    <td>
+                      <div class="text-d" id="12-3">加载中</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>13</td>
+                    <td><span class="text-w" id="13-1">加载中</span></td>
+                    <td><span class="text-b" id="13-2">加载中</span></td>
+                    <td>
+                      <div class="text-d" id="13-3">加载中</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </li>
+
+        <li style="width: 56%">
+          <div class="box">
+            <div class="boxnav mapc" style="height: 550px; position: relative">
+              <div class="map" id="map">
+                <div id="cesiumContainer">
+                  <div id="loadingBox"></div>
+                  <div id="bigWindowAmap"></div>
+                </div>
+
+                <div id="switchButton" onclick="displaySwitch()"></div>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li style="width: 22%">
+          <div class="box">
+            <div class="tit" id="details">详细信息</div>
+            <div class="boxnav" id="echart3" style="height: 200px">
+              <div class="hintText" id="infoDisplayHint" style="visibility: visible; top: 120px">暂无内容</div>
+              <div id="jamPointInfoTable" class="grid-container" style="visibility: hidden">
+                <div class="grid-item field-value">道路名称</div>
+                <div class="grid-item table-value" id="roadName">加载中</div>
+                <div class="grid-item table-value"></div>
+                <div class="table-value hint-value" id="dirName">加载中</div>
+                <div class="grid-item field-value">拥堵指数</div>
+                <div class="grid-item table-value" id="jamIndex">加载中</div>
+                <div class="grid-item field-value">速度</div>
+                <div class="grid-item table-value" id="speed">加载中</div>
+                <div class="grid-item field-value">旅行时间</div>
+                <div class="grid-item table-value" id="travelTime">加载中</div>
+                <div class="grid-item field-value">延迟时间</div>
+                <div class="grid-item table-value" id="delayTime">加载中</div>
+              </div>
+            </div>
+          </div>
+          <div class="box">
+            <div class="tit">二维地图</div>
+            <div id="map2DContainer" class="boxnav" style="height: 250px">
+              <div class="hintText" id="mapDisplayHint">暂无内容</div>
+            </div>
+          </div>
+        </li>
+      </ul>
+
+      <div class="box" style="padding: 20px 0">
+        <ul class="clearfix nav2">
+          <li style="width: 25%">
+            <div class="tit01">当前交通健康指数</div>
+            <div style="height: 100%; width: 100%" class="" id="">
+              <div id="healthyIndexBox" style="height: 65%">0.0</div>
+              <div style="height: 15%; text-align: center">
+                <span class="healthyStatus" id="healState">加载中</span>
+              </div>
+              <div class="leidanav" style="height: 20%">
+                <ul class="clearfix">
+                  <li style="text-align: center; width: 120px">
+                    <span>全国排名</span>
+                    <p id="curRank">00</p>
+                  </li>
+                  <li style="text-align: center; width: 110px">
+                    <span>拥堵延时指数</span>
+                    <p id="curDelayIndex">0.00</p>
+                  </li>
+                  <li style="text-align: center; width: 120px">
+                    <span>平均速度(km/h)</span>
+                    <p id="curRealSpeed">00.00</p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </li>
+          <li style="width: 50%">
+            <div class="tit01">24小时内拥堵延时指数</div>
+            <div style="margin: auto; top: 10px; width: 90%; height: 90%" id="healthyIndexGraph"></div>
+          </li>
+          <li style="width: 25%">
+            <div class="tit01">当前交通健康情况雷达图</div>
+            <div style="height: 100%; width: 100%" class="" id="">
+              <div style="height: 100%" id="hexagonRadarGraph"></div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <!--路径规划弹层-->
+    <div id="routePlanning" hidden>
+      <br />
+      <form id="routePlanningForm" class="layui-form">
+        <div class="layui-form-item">
+          <label class="layui-form-label">起点</label>
+          <div class="layui-input-inline">
+            <input type="text" id="origin" required lay-verify="required" autocomplete="off" class="layui-input" />
+          </div>
+        </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">终点</label>
+          <div class="layui-input-inline">
+            <input type="text" id="destination" required lay-verify="required" autocomplete="off" class="layui-input" />
+          </div>
+        </div>
+      </form>
+    </div>
+  </body>
+
+  <!--加载layui模块-->
+  <script src="lib/layui-v2.6.8/layui/layui.js">
+    layui.use(['element', 'form'], function () {
+    	var element = layui.element;
+    	var form = layui.form;
+    })
+  </script>
+  <script src="https://webapi.amap.com/loader.js"></script>
+  <script src="lib/jquery.js"></script>
+  <script src="lib/coordinateTransform.js"></script>
+  <script src="lib/echarts.min.js"></script>
+  <script src="js/echart-init.js"></script>
+  <script src="lib/Cesium_Build/CesiumUnminified/Cesium.js"></script>
+  <script src="js/gaode-amap.js"></script>
+  <script src="js/page-init.js"></script>
+  <script src="js/crawler-handler.js"></script>
+</html>
