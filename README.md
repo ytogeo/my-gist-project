@@ -6,7 +6,7 @@
 ## 使用方法
 
 在VScode的终端中或是在cmd中将路径切换到文件夹根目录，执行命令：`node server.js` 以启动服务器。<br>
-在浏览器中输入 <http://localhost:5502/index.html> 访问本系统首页。
+在浏览器中输入 <http://localhost:5505/index.html> 访问本系统首页。
 
 ## 关闭服务器
 在VScode的终端中或是在cmd中将路径切换到文件夹根目录，输入：
