@@ -42,8 +42,7 @@ app.listen(5505, function () {
 
 //根路径
 app.use('/static', myExpress.static('public'));
-var i = '0';
-var j = 'z';
+
 var jsonArrayOfRouteJam;
 var jsonArrayOfRankData;
 var jsonArrayOfHourlyHealthyIndex;
