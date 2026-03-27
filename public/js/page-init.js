@@ -7,9 +7,9 @@ let lon = 114.304569;
 let lat = 30.593354;
 // Cesium密钥
 const defaultAccessToken =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyYTQ1YWM4Yi1jMWQ2LTRjODktYWUwZi1iN2E3MGY0YTc4NzUiLCJpZCI6MTI2OTc3LCJpYXQiOjE2Nzc3NDg2MTB9.1sM-0Hkm_FzlYZFqnTQlYyLVWZcJqg8EelxDssdjl28';
+    '****************************************';
 // 天地图密钥
-var token = 'b9b78678db92aec1143ce773032cd698';
+var token = '*******************************';
 // 天地图服务域名
 var tdtUrl = 'https://t7.tianditu.gov.cn/';
 
