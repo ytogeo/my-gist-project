@@ -1,5 +1,5 @@
 window._AMapSecurityConfig = {
-    securityJsCode: "bf4423405f6e419810846c2901e57fad",
+    securityJsCode: "******************",
 }
 var isBigWindowAmapHidden = true;
 var map; //小窗的地图
