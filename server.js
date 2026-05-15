@@ -16,7 +16,7 @@ var routeJamURL = "https://report.amap.com/ajax/roadRank.do?roadType=0&timeType=
 var headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.65 Safari/537.36',
     //高德有反爬虫机制，需要设置cookie
-    'cookie': '_uab_collina=167808715203796738847639; UM_distinctid=186b5c9e535751-08b784b1130fed-74525476-144000-186b5c9e5369f4; user_unique_id=a1be5624864ea5eb0186ee75f3041fd5; CNZZDATA1256662931=1425161909-1678084415-https%253A%252F%252Ftrp.autonavi.com%252F%7C1679054226; __session:0.9262987945018881:state=111; __session:0.7747872814073917:state=111',
+    'cookie': '填入cookie',
     //不缓存
     //'Cache-Control': 'no-cache'
 }
